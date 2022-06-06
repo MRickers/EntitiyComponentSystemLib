@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <ecs/core/entity_manager.h>
+#include <ecs/core/component_array.h>
 
 TEST_CASE("EntityManager create", "[entitymanager]") {
     ecs::core::EntityManager manager;
@@ -62,3 +63,29 @@ TEST_CASE("EntityManager empty", "[entitymanager]") {
     REQUIRE(manager.Empty());
 }
 
+TEST_CASE("ComponentArray add/get", "[componentarray]") {
+    ecs::core::ComponentArray<int> array;
+
+    SECTION("Add Get") {
+        REQUIRE(array.Add(0, 1) == ecs::core::err::ok);
+        REQUIRE(array.Get(0).data == 1);
+    }
+    SECTION("Get not added") {
+        REQUIRE(array.Get(0).error == ecs::core::err::no_entity);
+        REQUIRE(array.Get(0).data == 0);
+    }
+    SECTION("Add Get multiple") {
+        REQUIRE(array.Add(0, 1) == ecs::core::err::ok);
+        REQUIRE(array.Add(1, 2) == ecs::core::err::ok);
+        REQUIRE(array.Add(2, 3) == ecs::core::err::ok);
+        REQUIRE(array.Add(3, 4) == ecs::core::err::ok);
+
+        REQUIRE(array.Get(0).data == 1);
+        REQUIRE(array.Get(2).data == 3);
+        REQUIRE(array.Get(3).data == 4);
+        REQUIRE(array.Get(1).data == 2);
+    }
+    SECTION("Remove") {
+
+    }
+}
