@@ -40,12 +40,11 @@ namespace ecs::core {
 
 		err Remove(Entity entity) {
 			if (const auto index_of_removed_entity = entity_to_index_.find(entity); index_of_removed_entity != entity_to_index_.end()) {
-				//const auto index_of_removed_entity = entity_to_index_.at(entity);
 				const auto index_of_last_entity = size_ - 1;
-				components_[index_of_removed_entity->second] = component_array_.at(index_of_last_entity);
-				Entity last_entity = index_to_entity_.at(index_of_last_entity);
-				entity_to_index_.at(last_entity) = index_of_removed_entity;
-				index_to_entity_.at(index_of_removed_entity) = last_entity;
+				components_[index_of_removed_entity->second] = components_[index_of_last_entity];
+				Entity last_entity = index_to_entity_[index_of_last_entity];
+				entity_to_index_[last_entity] = index_of_removed_entity->second;
+				index_to_entity_[index_of_removed_entity->second] = last_entity;
 				entity_to_index_.erase(entity);
 				index_to_entity_.erase(index_of_last_entity);
 				size_--;
@@ -54,8 +53,22 @@ namespace ecs::core {
 			return err::no_entity;
 		}
 
-		virtual void DestroyEntity([[maybe_unised]]Entity entity) override {
+		virtual void DestroyEntity([[maybe_unused]]Entity entity) override {
 
 		}
+
+		#if _TESTING
+		std::unordered_map<Entity, size_t> GetEntityIndex() const {
+			return entity_to_index_;
+		}
+		#endif
 	};
+
+	template<typename T>
+	std::ostream& operator<<(std::ostream& os, const ComponentArray<T>& item){
+		for(const auto entity : item.entity_to_index_) {
+			os << "Entity: " << entity.first << " Index: " << entity.second;
+		}
+		return os;
+	}
 }

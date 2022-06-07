@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include <catch2/catch_test_macros.hpp>
 
 #include <ecs/core/entity_manager.h>
@@ -85,7 +87,29 @@ TEST_CASE("ComponentArray add/get", "[componentarray]") {
         REQUIRE(array.Get(3).data == 4);
         REQUIRE(array.Get(1).data == 2);
     }
-    SECTION("Remove") {
+    SECTION("Add check entity index") {
+        array.Add(0, 111);
+        array.Add(1, 111);
+        array.Add(2, 111);
+        array.Add(3, 111);
 
+        const auto entity_index = array.GetEntityIndex();
+        REQUIRE(entity_index.at(0) == 0);
+        REQUIRE(entity_index.at(1) == 1);
+        REQUIRE(entity_index.at(2) == 2);
+        REQUIRE(entity_index.at(3) == 3);
+    }
+    SECTION("Add/Remove check entity index") {
+        array.Add(0, 111);
+        array.Add(1, 111);
+        array.Add(2, 111);
+        array.Add(3, 111);
+
+        array.Remove(1);
+
+        const auto entity_index = array.GetEntityIndex();
+        REQUIRE(entity_index.at(0) == 0);
+        REQUIRE(entity_index.at(3) == 1);
+        REQUIRE(entity_index.at(2) == 2);
     }
 }
