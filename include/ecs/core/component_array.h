@@ -28,7 +28,7 @@ namespace ecs::core {
 
 				return err::ok;
 			}
-			return err::component_array_out_of_range;
+			return err::entity_limit;
 		}
 
 		result<T> Get(Entity entity) const {
@@ -56,19 +56,5 @@ namespace ecs::core {
 		virtual void DestroyEntity([[maybe_unused]]Entity entity) override {
 
 		}
-
-		#if _TESTING
-		std::unordered_map<Entity, size_t> GetEntityIndex() const {
-			return entity_to_index_;
-		}
-		#endif
 	};
-
-	template<typename T>
-	std::ostream& operator<<(std::ostream& os, const ComponentArray<T>& item){
-		for(const auto entity : item.entity_to_index_) {
-			os << "Entity: " << entity.first << " Index: " << entity.second;
-		}
-		return os;
-	}
 }

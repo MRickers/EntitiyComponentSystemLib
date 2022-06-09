@@ -41,6 +41,7 @@ option(build_tests "Build ecs tests" ON)
 
 add_library(ecslib STATIC
 src/core/entity_manager.cpp
+src/core/component_layout.cpp
 )
 target_include_directories(ecslib PRIVATE include)
 target_link_libraries(ecslib ${LIBS})

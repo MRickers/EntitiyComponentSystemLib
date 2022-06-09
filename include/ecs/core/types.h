@@ -14,7 +14,7 @@ namespace ecs::core {
         no_entity,
         no_signature,
 
-        component_array_out_of_range,
+        entity_limit,
 
     };
 
@@ -30,6 +30,8 @@ namespace ecs::core {
     template<typename T>
     struct result {
         result(T d, err err=err::ok) : data(d), error(err){}
+        result() : data(), error(err::ok){}
+        result(err err) : data(), error(err){};
 
         T data;
         err error;
