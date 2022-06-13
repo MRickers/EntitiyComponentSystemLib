@@ -20,15 +20,17 @@ namespace ecs::core {
     }
 
     result<size_t> Compressor::Remove(Entity entity) {
-        if (const auto index_of_removed_entity = entity_to_index_.find(entity); index_of_removed_entity != entity_to_index_.end()) {
+        if (const auto removed_entity = entity_to_index_.find(entity); removed_entity != entity_to_index_.end()) {
+            const auto index_of_removed_entity = removed_entity->second;
             const auto index_of_last_entity = size_ - 1;
             Entity last_entity = index_to_entity_[index_of_last_entity];
-            entity_to_index_[last_entity] = index_of_removed_entity->second;
-            index_to_entity_[index_of_removed_entity->second] = last_entity;
+            entity_to_index_[last_entity] = index_of_removed_entity;
+            index_to_entity_[index_of_removed_entity] = last_entity;
             entity_to_index_.erase(entity);
             index_to_entity_.erase(index_of_last_entity);
             size_--;
-            return {index_of_removed_entity->second};
+
+            return {index_of_removed_entity};
         }
         return {err::no_entity};
     }
