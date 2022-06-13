@@ -12,7 +12,7 @@ if(WIN32)
 # Gs	- Controles stack probes
 # GT	- Using thread-local storage
 # guard:cf	- Adds control flow guard security checks
-set(COMPILE_OPTIONS /W4 /GT /GS /Gs /guard:cf $<$<CONFIG:Debug>:/RTC1>)
+set(COMPILE_OPTIONS /W4 /GT /GS /Gs /guard:cf $<$<CONFIG:Debug>:/RTC1> $<$<CONFIG:Debug>:/fsanitize=address>)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS 1)
 
 add_definitions(-DWIN32_LEAN_AND_MEAN)

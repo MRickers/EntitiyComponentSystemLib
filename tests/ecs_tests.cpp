@@ -5,6 +5,7 @@
 #include <ecs/core/entity_manager.h>
 #include <ecs/core/component_array.h>
 #include <ecs/core/component_layout.h>
+#include <ecs/core/component_manager.h>
 
 TEST_CASE("EntityManager create", "[entitymanager]") {
     ecs::core::EntityManager manager;
@@ -173,4 +174,34 @@ TEST_CASE("Component Array Layout", "[layout]") {
         REQUIRE(layout.Get(3).data == 0);
         REQUIRE(layout.Get(2).data == 1);
     }
+}
+
+TEST_CASE("Register component", "[component manager]") {
+    struct Foo {
+        int x;
+    };
+
+    ecs::core::ComponentManager manager;
+
+    SECTION("Register") {
+        REQUIRE(manager.Register<int>() == ecs::core::err::ok);
+        REQUIRE(manager.Register<float>() == ecs::core::err::ok);
+        REQUIRE(manager.Register<Foo>() == ecs::core::err::ok);
+    }
+    SECTION("Already registered") {
+        REQUIRE(manager.Register<Foo>() == ecs::core::err::ok);
+        REQUIRE(manager.Register<Foo>() == ecs::core::err::already_registered);
+        REQUIRE(manager.Register<std::string>() == ecs::core::err::ok);
+    }
+}
+
+TEST_CASE("Get", "[component manager]") {
+    ecs::core::ComponentManager manager;
+
+    SECTION("Get simple") {
+        manager.Register<int>();
+        manager.Get<int>(0);
+    }
+
+
 }

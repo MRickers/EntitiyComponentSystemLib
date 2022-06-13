@@ -16,6 +16,8 @@ namespace ecs::core {
 
         entity_limit,
 
+        already_registered,
+
     };
 
     enum class components {
