@@ -3,6 +3,7 @@
 #include <unordered_map>
 
 #include <ecs/core/types.h>
+#include <ecs/core/component_layout.h>
 
 namespace ecs::core {
 	class ComponentBase {
@@ -11,50 +12,50 @@ namespace ecs::core {
 		virtual void DestroyEntity(Entity entity) = 0;
 	};
 
-	template<typename T>
+	template<typename T, typename MemoryLayout>
 	class ComponentArray : public ComponentBase {
 	private:
 		std::array<T, MAX_ENTITY_COUNT> components_{};
-		std::unordered_map<Entity, std::size_t> entity_to_index_{};
-		std::unordered_map<std::size_t, Entity> index_to_entity_{};
-		std::size_t size_{ 0 };
+		MemoryLayout memory_layout_{};
 	public:
 		err Add(Entity entity, const T& component) {
-			if (const auto new_index = size_; new_index < MAX_ENTITY_COUNT) {
-				entity_to_index_[entity] = new_index;
-				index_to_entity_[new_index] = entity;
-				components_[new_index] = component;
-				size_++;
+			const result<size_t> result = memory_layout_.Add(entity);
 
-				return err::ok;
+			if(result.error != err::ok) {
+				return result.error;
 			}
-			return err::entity_limit;
+			
+			const auto new_index = result.data;
+			components_[new_index] = component;
+			return err::ok;
 		}
 
 		result<T> Get(Entity entity) const {
-			if (const auto index = entity_to_index_.find(entity); index != entity_to_index_.end()) {
-				return result<T>(components_[index->second]);
+			const auto result = memory_layout_.Get(entity);
+			if(result.error != err::ok) {
+				return result.error;
 			}
-			return result<T>({}, err::no_entity);
+			return {components_[result.data]};
 		}
 
 		err Remove(Entity entity) {
-			if (const auto index_of_removed_entity = entity_to_index_.find(entity); index_of_removed_entity != entity_to_index_.end()) {
-				const auto index_of_last_entity = size_ - 1;
-				components_[index_of_removed_entity->second] = components_[index_of_last_entity];
-				Entity last_entity = index_to_entity_[index_of_last_entity];
-				entity_to_index_[last_entity] = index_of_removed_entity->second;
-				index_to_entity_[index_of_removed_entity->second] = last_entity;
-				entity_to_index_.erase(entity);
-				index_to_entity_.erase(index_of_last_entity);
-				size_--;
-				return err::ok;
+			const result<size_t> result = memory_layout_.Remove(entity);
+
+			if(result.error != err::ok) {
+				return result.error;
 			}
-			return err::no_entity;
+
+			const auto index_last_entity = memory_layout_.Size();
+			const auto index_removed_entity = result.data;
+
+			components_[index_removed_entity] = components_[index_last_entity];
+			return err::ok;
 		}
 
 		virtual void DestroyEntity([[maybe_unused]]Entity entity) override {
 
 		}
 	};
+	template<typename T>
+	using CompressedComponentArray = ComponentArray<T, ecs::core::Compressor>;
 }
