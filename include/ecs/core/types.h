@@ -17,6 +17,7 @@ namespace ecs::core {
         entity_limit,
 
         already_registered,
+        not_registered,
 
     };
 

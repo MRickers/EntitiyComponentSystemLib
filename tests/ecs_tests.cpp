@@ -195,13 +195,26 @@ TEST_CASE("Register component", "[component manager]") {
     }
 }
 
+TEST_CASE("Add", "[component manager]") {
+    ecs::core::ComponentManager manager;
+
+    SECTION("Add simple") {
+        manager.Register<std::string>();
+        REQUIRE(manager.Add<std::string>(5, "Hello there") == ecs::core::err::ok);
+    }
+    SECTION("Add not registered") {
+        REQUIRE(manager.Add<double>(1000, 1.337) == ecs::core::err::not_registered);
+    }
+}
+
 TEST_CASE("Get", "[component manager]") {
     ecs::core::ComponentManager manager;
 
     SECTION("Get simple") {
-        manager.Register<int>();
-        manager.Get<int>(0);
+        REQUIRE(manager.Register<int>() == ecs::core::err::ok);
+        REQUIRE(manager.Get<int>(0).error == ecs::core::err::no_entity);
     }
-
-
+    SECTION("Get not registered") {
+        REQUIRE(manager.Get<char>(100).error == ecs::core::err::not_registered);
+    }
 }

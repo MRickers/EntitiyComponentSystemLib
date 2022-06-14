@@ -10,7 +10,7 @@
 
 namespace ecs::core {
 	class ComponentManager {
-		using Components = std::unordered_map<size_t, std::unique_ptr<ComponentBase>>;
+		using Components = std::unordered_map<size_t, std::shared_ptr<ComponentBase>>;
 	private:
 		Components components_{};
 		static inline size_t type_counter{ 0 };
@@ -28,10 +28,10 @@ namespace ecs::core {
 
 		template<typename T>
 		err Register() {
-			auto type_key = getTypeId<T>();
+			const auto type_key = getTypeId<T>();
 
 			if (auto component = components_.find(type_key); component == components_.end()) {
-				components_[type_key] = std::make_unique<CompressedComponentArray<T>>() ;
+				components_[type_key] = std::make_shared<CompressedComponentArray<T>>() ;
 				return err::ok;
 			}
 			return err::already_registered;
@@ -39,15 +39,25 @@ namespace ecs::core {
 
 		template<typename T>
 		result<T> Get(Entity entity) const {
-			auto type_key = getTypeId<T>();
-
-			lLog(lDebug) << "key: " << type_key << " type: " << typeid(T).name();
+			const auto type_key = getTypeId<T>();
 
 			if (auto component = components_.find(type_key); component != components_.end()) {
-				auto real_component = std::static_pointer_cast<CompressedComponentArray<T>>(component->first);
-				return {};
+
+				auto real_component = std::static_pointer_cast<CompressedComponentArray<T>>(component->second);
+				return real_component->Get(entity);
 			}
-			return {};
+			return {err::not_registered};
+		}
+
+		template<typename T>
+		err Add(Entity entity, const T& component) {
+			const auto type_key = getTypeId<T>();
+
+			if (auto component_it = components_.find(type_key); component_it != components_.end()) {
+				auto real_component = std::static_pointer_cast<CompressedComponentArray<T>>(component_it->second);
+				return real_component->Add(entity, component);
+			}
+			return err::not_registered;
 		}
 
 	};
