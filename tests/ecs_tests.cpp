@@ -1,6 +1,7 @@
 #include <sstream>
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 
 #include <ecs/core/entity_manager.h>
 #include <ecs/core/component_array.h>
@@ -105,6 +106,21 @@ TEST_CASE("ComponentArray add/get", "[componentarray]") {
     }
 }
 
+TEST_CASE("Component Array struct", "[componentarray]") {
+    SECTION("Add temporary") {
+        struct Foo {
+            int x{0};
+            int y{1};
+        };
+        ecs::core::CompressedComponentArray<Foo> array;
+
+        REQUIRE(array.Add(10, Foo()) == ecs::core::err::ok);
+        REQUIRE(array.Get(10).error == ecs::core::err::ok);
+        REQUIRE(array.Get(10).data.x == 0);
+        REQUIRE(array.Get(10).data.y == 1);
+    }
+}
+
 TEST_CASE("Component Array Layout", "[layout]") {
     ecs::core::Compressor layout;
 
@@ -180,6 +196,10 @@ TEST_CASE("Register component", "[component manager]") {
     struct Foo {
         int x;
     };
+    struct Bar {
+        std::string a{""};
+        bool b{false};
+    };
 
     ecs::core::ComponentManager manager;
 
@@ -187,6 +207,9 @@ TEST_CASE("Register component", "[component manager]") {
         REQUIRE(manager.Register<int>() == ecs::core::err::ok);
         REQUIRE(manager.Register<float>() == ecs::core::err::ok);
         REQUIRE(manager.Register<Foo>() == ecs::core::err::ok);
+        REQUIRE(manager.Register<char>() == ecs::core::err::ok);
+        REQUIRE(manager.Register<std::string>() == ecs::core::err::ok);
+        REQUIRE(manager.Register<Bar>() == ecs::core::err::ok);
     }
     SECTION("Already registered") {
         REQUIRE(manager.Register<Foo>() == ecs::core::err::ok);
@@ -195,7 +218,12 @@ TEST_CASE("Register component", "[component manager]") {
     }
 }
 
-TEST_CASE("Add", "[component manager]") {
+TEST_CASE("Add components", "[component manager]") {
+    struct Bar {
+        int x{0};
+        int y{1};
+    };
+
     ecs::core::ComponentManager manager;
 
     SECTION("Add simple") {
@@ -205,9 +233,28 @@ TEST_CASE("Add", "[component manager]") {
     SECTION("Add not registered") {
         REQUIRE(manager.Add<double>(1000, 1.337) == ecs::core::err::not_registered);
     }
+    SECTION("Add different components") {
+        REQUIRE(manager.Register<Bar>() == ecs::core::err::ok);
+        REQUIRE(manager.Register<int>() == ecs::core::err::ok);
+
+        REQUIRE(manager.Add(10, Bar()) == ecs::core::err::ok);
+        REQUIRE(manager.Add(10, 35) == ecs::core::err::ok);
+        REQUIRE(manager.Get<Bar>(10).error == ecs::core::err::ok);
+        REQUIRE(manager.Get<Bar>(10).data.x == 0);
+        REQUIRE(manager.Get<Bar>(10).data.y == 1);
+    }
+    SECTION("Benchmark add") {
+        manager.Register<std::string>();
+        BENCHMARK("Add a small component") {
+            return manager.Add<std::string>(1000, "General Kenobi");
+        };
+        BENCHMARK("Add a large component") {
+            return manager.Add<std::string>(2000, "Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test ");
+        };
+    }
 }
 
-TEST_CASE("Get", "[component manager]") {
+TEST_CASE("Get components", "[component manager]") {
     ecs::core::ComponentManager manager;
 
     SECTION("Get simple") {
@@ -216,5 +263,33 @@ TEST_CASE("Get", "[component manager]") {
     }
     SECTION("Get not registered") {
         REQUIRE(manager.Get<char>(100).error == ecs::core::err::not_registered);
+    }
+    SECTION("Add/Get") {
+        REQUIRE(manager.Register<std::string>() == ecs::core::err::ok);
+        REQUIRE(manager.Add<std::string>(100, "Hello there") == ecs::core::err::ok);
+        REQUIRE(manager.Add<std::string>(1, "General Kenobi") == ecs::core::err::ok);
+        REQUIRE(manager.Add<std::string>(12, "Foo") == ecs::core::err::ok);
+        REQUIRE(manager.Add<std::string>(1000, "Bar") == ecs::core::err::ok);
+
+        REQUIRE(manager.Get<std::string>(100).error == ecs::core::err::ok);
+        REQUIRE(manager.Get<std::string>(100).data == "Hello there");
+        REQUIRE(manager.Get<std::string>(1).error == ecs::core::err::ok);
+        REQUIRE(manager.Get<std::string>(1).data == "General Kenobi");
+        REQUIRE(manager.Get<std::string>(12).error == ecs::core::err::ok);
+        REQUIRE(manager.Get<std::string>(12).data == "Foo");
+        REQUIRE(manager.Get<std::string>(1000).error == ecs::core::err::ok);
+        REQUIRE(manager.Get<std::string>(1000).data == "Bar");
+    }
+
+    SECTION("Benchmark Get") {
+        manager.Register<std::string>();
+        manager.Add<std::string>(1000, "General Kenobi");
+        manager.Add<std::string>(2000, "Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test ");
+        BENCHMARK("Get a small component") {
+            return manager.Get<std::string>(1000);
+        };
+        BENCHMARK("Get a large component") {
+            return manager.Get<std::string>(2000);
+        };
     }
 }

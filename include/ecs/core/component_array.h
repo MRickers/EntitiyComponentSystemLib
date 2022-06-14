@@ -33,7 +33,7 @@ namespace ecs::core {
 		result<T> Get(Entity entity) const {
 			const auto result = memory_layout_.Get(entity);
 			if(result.error != err::ok) {
-				return result.error;
+				return {result.error};
 			}
 			return {components_[result.data]};
 		}

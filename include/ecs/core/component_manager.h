@@ -13,11 +13,11 @@ namespace ecs::core {
 		using Components = std::unordered_map<size_t, std::shared_ptr<ComponentBase>>;
 	private:
 		Components components_{};
-		static inline size_t type_counter{ 0 };
+		static inline size_t type_counter_{ 0 };
 
 		template<typename T>
 		static size_t getTypeId() {
-			static size_t type_id = type_counter++;
+			static size_t type_id = type_counter_++;
 			return type_id;
 		}
 	public:
@@ -38,7 +38,7 @@ namespace ecs::core {
 		}
 
 		template<typename T>
-		result<T> Get(Entity entity) const {
+		result<T> Get(Entity entity) {
 			const auto type_key = getTypeId<T>();
 
 			if (auto component = components_.find(type_key); component != components_.end()) {
@@ -58,6 +58,26 @@ namespace ecs::core {
 				return real_component->Add(entity, component);
 			}
 			return err::not_registered;
+		}
+
+		template<typename T>
+		err Remove(Entity entity) {
+			const auto type_key = getTypeId<T>();
+
+			if (auto component_it = components_.find(type_key); component_it != components_.end()) {
+				auto real_component = std::static_pointer_cast<CompressedComponentArray<T>>(component_it->second);
+				return real_component->Remove(entity);
+			}
+			return err::not_registered;
+		}
+
+		err DestroyEntity(Entity entity) {
+			for (const auto& components : components_) {
+				const auto& component = components.second;
+
+				component->DestroyEntity(entity);
+			}
+			return err::ok;
 		}
 
 	};
