@@ -5,15 +5,14 @@
 
 namespace ecs::core {
 	class System {
-	protected:
-		std::unordered_set<Entity> entities_;
+	private:
+		std::unordered_set<Entity> entities_{};
 	public:
 		virtual ~System() = default;
 
 		err Add(Entity entity) {
-			if (const auto [it, inserted] = entities_.insert(entity); inserted) {
-				return err::ok;
-			}
+			const auto [it, inserted] = entities_.insert(entity);
+			if(inserted) return err::ok;
 			return err::already_registered;
 		}
 

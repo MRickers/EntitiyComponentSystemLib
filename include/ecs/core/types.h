@@ -21,6 +21,8 @@ namespace ecs::core {
 
         invalid_signature,
 
+        invalid_argument,
+
     };
 
     enum class components {

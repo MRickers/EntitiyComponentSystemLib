@@ -7,6 +7,7 @@
 #include <ecs/core/component_array.h>
 #include <ecs/core/component_layout.h>
 #include <ecs/core/component_manager.h>
+#include <ecs/core/system_manager.h>
 
 TEST_CASE("EntityManager create", "[entitymanager]") {
     ecs::core::EntityManager manager;
@@ -291,5 +292,85 @@ TEST_CASE("Get components", "[component manager]") {
         BENCHMARK("Get a large component") {
             return manager.Get<std::string>(2000);
         };
+    }
+}
+
+TEST_CASE("Add Entity", "[system]") {
+    ecs::core::System system;
+
+    REQUIRE(system.Add(0) == ecs::core::err::ok);
+    REQUIRE(system.Add(0) == ecs::core::err::already_registered);
+    REQUIRE(system.Remove(0) == ecs::core::err::ok);
+    REQUIRE(system.Remove(0) == ecs::core::err::not_registered);
+}
+
+TEST_CASE("Register System", "[system manager]") {
+    struct TestSystem : ecs::core::System {
+
+    };
+    struct FooSystem : ecs::core::System {
+
+    };
+
+    ecs::core::SystemManager manager;
+
+    SECTION("Register") {
+        REQUIRE(manager.Register<TestSystem>() == ecs::core::err::ok);
+    }
+    SECTION("Already registered") {
+        REQUIRE(manager.Register<TestSystem>() == ecs::core::err::ok);
+        REQUIRE(manager.Register<TestSystem>() == ecs::core::err::already_registered);
+    }
+    SECTION("Inject system") {
+        const auto system = std::make_shared<FooSystem>();
+        REQUIRE(manager.Register(system) == ecs::core::err::ok);
+    }
+}
+
+TEST_CASE("Set system signature", "[system manager]") {
+    struct TestSystem : ecs::core::System {
+
+    };
+    struct FooSystem : ecs::core::System {
+
+    };
+
+    ecs::core::SystemManager manager;
+
+    SECTION("Add Siganture") {
+        REQUIRE(manager.Register<TestSystem>() == ecs::core::err::ok);
+        REQUIRE(manager.SetSystemSignature<TestSystem>(ecs::core::Signature()) == ecs::core::err::ok);
+    }
+    SECTION("Not Registered System") {
+        REQUIRE(manager.SetSystemSignature<TestSystem>(ecs::core::Signature()) == ecs::core::err::not_registered);
+    }
+}
+
+TEST_CASE("Set Entity Signature" "[system manager]") {
+    struct TestSystem : ecs::core::System {
+
+    };
+    struct FooSystem : ecs::core::System {
+
+    };
+
+    ecs::core::SystemManager manager;
+
+    SECTION("Add Entity Signature not registered") {
+        REQUIRE(manager.SetEntitySignature(0, ecs::core::Signature()) == ecs::core::err::not_registered);
+    }
+    SECTION("Add invalid system") {
+        auto system = std::shared_ptr<TestSystem>();
+        REQUIRE(manager.Register(system) == ecs::core::err::invalid_argument);
+    }
+    SECTION("Add Entity Signaure") {
+        auto system = std::make_shared<FooSystem>();
+        REQUIRE(manager.Register(system) == ecs::core::err::ok);
+        REQUIRE(manager.SetSystemSignature<FooSystem>(ecs::core::Signature(1)) == ecs::core::err::ok);
+        REQUIRE(manager.SetEntitySignature(0, ecs::core::Signature(1)) == ecs::core::err::ok);
+        REQUIRE(manager.SetEntitySignature(0, ecs::core::Signature(1)) == ecs::core::err::already_registered);
+        REQUIRE(manager.SetEntitySignature(0, ecs::core::Signature(0)) == ecs::core::err::ok);
+        REQUIRE(manager.SetEntitySignature(0, ecs::core::Signature(0)) == ecs::core::err::not_registered);
+        REQUIRE(manager.DestroyEntity(0) == ecs::core::err::ok);
     }
 }

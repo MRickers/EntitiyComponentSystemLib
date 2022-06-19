@@ -8,8 +8,8 @@
 namespace ecs::core {
 	class SystemManager {
 	private:
-		std::unordered_map<size_t, Signature> signatures_;
-		std::unordered_map<size_t, std::shared_ptr<System>> systems_;
+		std::unordered_map<size_t, Signature> signatures_{};
+		std::unordered_map<size_t, std::shared_ptr<System>> systems_{};
 
 		static inline size_t type_counter_{ 0 };
 		template<typename T>
@@ -33,6 +33,7 @@ namespace ecs::core {
 		err Register(std::shared_ptr<T> system) {
 			const auto type_id = getTypeId<T>();
 
+			if (system == nullptr) return err::invalid_argument;
 			if (const auto element = systems_.find(type_id); element == systems_.end()) {
 				systems_[type_id] = system;
 				return err::ok;
@@ -52,33 +53,36 @@ namespace ecs::core {
 		}
 
 		err SetEntitySignature(Entity entity, Signature signature) {
-			for (const auto& [type_id, system] : systems_) {
+			bool set = false;
+
+			for (const auto [type_id, system] : systems_) {
 				
 				if (const auto& element = signatures_.find(type_id); element != signatures_.end()) {
 					const auto& system_signature = element->second;
 
 					if ((signature & system_signature) == system_signature) {
 						if (const auto error = system->Add(entity); error != err::ok) {
-							lLog(lWarn) << "Add entity " << entity << " failed";
+							lLog(lWarn) << "Add entity " << entity << " to system " << type_id << " failed";
 							return error;
 						}
+						set = true;
 					}
 					else {
 						if (const auto error = system->Remove(entity); error != err::ok) {
-							lLog(lWarn) << "Remove entity " << entity << " failed";
+							lLog(lWarn) << "Remove entity " << entity << " from system " << type_id << " failed";
+							return error;
 						}
+						set = true;
 					}
 				}
 			}
-			return err::ok;
+			if(set) return err::ok;
+			return err::not_registered;
 		}
 
 		err DestroyEntity(Entity entity) {
 			for (auto& [type_id, system] : systems_) {
-				if (const auto error = system->Remove(entity); error != err::ok) {
-					lLog(lWarn) << "Destroying Entity " << entity << "failed";
-					return err::ok;
-				}
+				system->Remove(entity);
 			}
 			return err::ok;
 		}
