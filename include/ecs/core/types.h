@@ -3,8 +3,8 @@
 
 namespace ecs::core {
 
-    static const size_t MAX_COMPONENTS = 64;
-    static const size_t MAX_ENTITY_COUNT = 0x1000;
+    static constexpr size_t MAX_COMPONENTS = 64;
+    static constexpr size_t MAX_ENTITY_COUNT = 0x1000;
     using Entity = size_t;
 	using Signature = std::bitset<MAX_COMPONENTS>;
     using ComponentType = uint16_t;
@@ -18,6 +18,8 @@ namespace ecs::core {
 
         already_registered,
         not_registered,
+
+        invalid_signature,
 
     };
 
