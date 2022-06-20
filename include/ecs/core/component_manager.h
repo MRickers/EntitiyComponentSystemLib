@@ -80,5 +80,10 @@ namespace ecs::core {
 			return err::ok;
 		}
 
+		template<typename T>
+		ComponentType GetComponentType() const {
+			return getTypeId<T>();
+		}
+
 	};
 }

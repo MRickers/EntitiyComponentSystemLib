@@ -7,7 +7,7 @@ namespace ecs::core {
     static constexpr size_t MAX_ENTITY_COUNT = 0x1000;
     using Entity = size_t;
 	using Signature = std::bitset<MAX_COMPONENTS>;
-    using ComponentType = uint16_t;
+    using ComponentType = size_t;
 
     enum class err {
         ok,

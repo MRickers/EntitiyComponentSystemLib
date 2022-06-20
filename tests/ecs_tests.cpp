@@ -8,6 +8,7 @@
 #include <ecs/core/component_layout.h>
 #include <ecs/core/component_manager.h>
 #include <ecs/core/system_manager.h>
+#include <ecs/core/ecs.h>
 
 TEST_CASE("EntityManager create", "[entitymanager]") {
     ecs::core::EntityManager manager;
@@ -373,4 +374,35 @@ TEST_CASE("Set Entity Signature" "[system manager]") {
         REQUIRE(manager.SetEntitySignature(0, ecs::core::Signature(0)) == ecs::core::err::not_registered);
         REQUIRE(manager.DestroyEntity(0) == ecs::core::err::ok);
     }
+}
+
+TEST_CASE("Add systems", "[ecs]") {
+    struct TestSystem : ecs::core::System {
+
+    };
+    struct FooSystem : ecs::core::System {
+
+    };
+    ecs::core::EntityComponentSystem ecs;
+
+    REQUIRE(ecs.RegisterSystem<TestSystem>() == ecs::core::err::ok);
+    REQUIRE(ecs.RegisterSystem<FooSystem>() == ecs::core::err::ok);
+    REQUIRE(ecs.RegisterSystem<FooSystem>() == ecs::core::err::already_registered);
+    REQUIRE(ecs.RegisterSystem<TestSystem>() == ecs::core::err::already_registered);
+}
+
+TEST_CASE("Add/get/remove components", "[ecs]") {
+    struct Pos {
+        int x_{0};
+        int y_{0};
+    };
+
+    ecs::core::EntityComponentSystem ecs;
+    const auto entity = ecs.CreateEntity().data;
+    REQUIRE(ecs.RegisterComponent<Pos>() == ecs::core::err::ok);
+    REQUIRE(ecs.AddComponent(entity, Pos()) == ecs::core::err::ok);
+    REQUIRE(ecs.GetComponent<Pos>(entity).data.x_ == 0);
+    REQUIRE(ecs.GetComponent<Pos>(entity).data.y_ == 0);
+    REQUIRE(ecs.RemoveComponent<Pos>(entity) == ecs::core::err::ok);
+    REQUIRE(ecs.GetComponent<Pos>(entity).error == ecs::core::err::no_entity);
 }
