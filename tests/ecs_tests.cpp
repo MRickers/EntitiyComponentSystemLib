@@ -382,10 +382,14 @@ TEST_CASE("Set Entity Signature" "[system manager]") {
 
 TEST_CASE("Add systems", "[ecs]") {
     struct TestSystem : ecs::core::System {
+        virtual void update(ecs::core::time_ms delta_time) override {
 
+        }
     };
     struct FooSystem : ecs::core::System {
+        virtual void update(ecs::core::time_ms delta_time) override {
 
+        }
     };
     ecs::core::EntityComponentSystem ecs;
 
