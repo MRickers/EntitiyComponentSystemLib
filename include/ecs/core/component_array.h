@@ -52,8 +52,8 @@ namespace ecs::core {
 			return err::ok;
 		}
 
-		virtual void DestroyEntity([[maybe_unused]]Entity entity) override {
-
+		virtual void DestroyEntity(Entity entity) override {
+			Remove(entity);
 		}
 	};
 	template<typename T>
