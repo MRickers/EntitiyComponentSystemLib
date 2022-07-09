@@ -4,6 +4,7 @@
 #include <ecs/core/types.h>
 
 namespace ecs::core {
+	using time_ms = uint32_t;
 	class System {
 	private:
 		std::unordered_set<Entity> entities_{};
@@ -21,5 +22,7 @@ namespace ecs::core {
 			if (removed) return err::ok;
 			return err::not_registered;
 		}
+
+		virtual void update(time_ms delta_time) = 0;
 	};
 }

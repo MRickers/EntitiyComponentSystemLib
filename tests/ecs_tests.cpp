@@ -296,7 +296,11 @@ TEST_CASE("Get components", "[component manager]") {
 }
 
 TEST_CASE("Add Entity", "[system]") {
-    ecs::core::System system;
+    class BarSystem : public ecs::core::System {
+    public:
+        virtual void update(ecs::core::time_ms delta_time) override {}
+    };
+    BarSystem system;
 
     REQUIRE(system.Add(0) == ecs::core::err::ok);
     REQUIRE(system.Add(0) == ecs::core::err::already_registered);
@@ -306,10 +310,10 @@ TEST_CASE("Add Entity", "[system]") {
 
 TEST_CASE("Register System", "[system manager]") {
     struct TestSystem : ecs::core::System {
-
+        virtual void update(ecs::core::time_ms delta_time) override {}
     };
     struct FooSystem : ecs::core::System {
-
+        virtual void update(ecs::core::time_ms delta_time) override {}
     };
 
     ecs::core::SystemManager manager;
@@ -329,10 +333,10 @@ TEST_CASE("Register System", "[system manager]") {
 
 TEST_CASE("Set system signature", "[system manager]") {
     struct TestSystem : ecs::core::System {
-
+        virtual void update(ecs::core::time_ms delta_time) override {}
     };
     struct FooSystem : ecs::core::System {
-
+        virtual void update(ecs::core::time_ms delta_time) override {}
     };
 
     ecs::core::SystemManager manager;
@@ -348,10 +352,10 @@ TEST_CASE("Set system signature", "[system manager]") {
 
 TEST_CASE("Set Entity Signature" "[system manager]") {
     struct TestSystem : ecs::core::System {
-
+        virtual void update(ecs::core::time_ms delta_time) override {}
     };
     struct FooSystem : ecs::core::System {
-
+        virtual void update(ecs::core::time_ms delta_time) override {}
     };
 
     ecs::core::SystemManager manager;

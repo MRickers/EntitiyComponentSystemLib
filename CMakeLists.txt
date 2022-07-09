@@ -46,6 +46,14 @@ src/core/component_layout.cpp
 target_include_directories(ecslib PRIVATE include)
 target_link_libraries(ecslib ${LIBS})
 
+add_library(gameenginelib STATIC
+src/utils/clock_chrono.cpp
+src/event/communicator.cpp
+)
+target_include_directories(gameenginelib PRIVATE include)
+target_link_libraries(gameenginelib ecslib
+)
+
 if(build_examples)
 message(STATUS "Building ecs examples")
 
