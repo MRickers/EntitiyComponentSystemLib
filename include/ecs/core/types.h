@@ -23,6 +23,8 @@ namespace ecs::core {
 
         invalid_argument,
 
+        empty,
+
     };
 
     enum class components {

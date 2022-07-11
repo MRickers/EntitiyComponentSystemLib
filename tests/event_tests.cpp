@@ -4,6 +4,7 @@
 
 #include <event/event.h>
 #include <event/event_bus.h>
+#include <event/event_queue.h>
 
 class MockObserver : public ecs::event::IObserver {
 private:
@@ -107,5 +108,34 @@ TEST_CASE("EventBus", "[eventbus]") {
 		REQUIRE(events.Unsubscribe(TestEvents::foo, observer) == true);
 		events.Dispatch(TestEvents::foo, message);
 		REQUIRE(observer->Info() == "Empty");
+	}
+}
+
+TEST_CASE("EventQueue", "[eventqueue]") {
+	enum class Events {
+		foo,
+		bar,
+	};
+
+	ecs::event::EventQueue<Events> queue;
+
+	SECTION("Add and dequeue") {
+		queue.Enqueue(Events::foo);
+		const auto evnt = queue.Dequeue();
+		REQUIRE(evnt.error == ecs::core::err::ok);
+		REQUIRE(evnt.data == Events::foo);
+		REQUIRE(queue.Empty());
+	}
+	SECTION("Dequeue empty") {
+		const auto evnt = queue.Dequeue();
+		REQUIRE(evnt.error == ecs::core::err::empty);
+	}
+	SECTION("Clear queue") {
+		queue.Enqueue(Events::bar);
+		queue.Enqueue(Events::foo);
+		REQUIRE(queue.Size() == 2);
+		REQUIRE(!queue.Empty());
+		queue.Clear();
+		REQUIRE(queue.Empty());
 	}
 }
