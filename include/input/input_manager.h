@@ -1,5 +1,5 @@
 #pragma once
-#include <SFML/Windows.hpp>
+#include <SFML/Window.hpp>
 
 namespace ecs::input {
 	enum class EventType {
