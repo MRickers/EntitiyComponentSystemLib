@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(EntityComponentSystem VERSION 0.1.0 LANGUAGES CXX)
+project(retroengine VERSION 0.1.0 LANGUAGES CXX)
 
 
 
@@ -35,24 +35,21 @@ if(UNIX)
 set(LIBS ${GCC_FS_LIB})
 endif()
 
-option(build_examples "Build ecs examples" ON)
-option(build_tests "Build ecs tests" ON)
+include("link_sfml.cmake")
+
+option(build_examples "Building examples" ON)
+option(build_tests "Buildingtests" ON)
 
 
-add_library(ecslib STATIC
+add_library(retroenginelib STATIC
 src/core/entity_manager.cpp
 src/core/component_layout.cpp
-)
-target_include_directories(ecslib PRIVATE include)
-target_link_libraries(ecslib ${LIBS})
 
-add_library(gameenginelib STATIC
 src/utils/clock_chrono.cpp
 src/event/communicator.cpp
 )
-target_include_directories(gameenginelib PRIVATE include)
-target_link_libraries(gameenginelib ecslib
-)
+target_include_directories(retroenginelib PRIVATE include ${SFML_INCLUDE})
+target_link_libraries(retroenginelib ${LIBS} ${SFML_LIBS})
 
 if(build_examples)
 message(STATUS "Building ecs examples")

@@ -317,7 +317,7 @@ TEST_CASE("Register System", "[system manager]") {
         virtual void update(ecs::core::time_ms delta_time) override {}
     };
 
-    ecs::core::SystemManager manager;
+    ecs::core::SystemManager<int> manager;
 
     SECTION("Register") {
         REQUIRE(manager.Register<TestSystem>() == ecs::core::err::ok);
@@ -340,7 +340,7 @@ TEST_CASE("Set system signature", "[system manager]") {
         virtual void update(ecs::core::time_ms delta_time) override {}
     };
 
-    ecs::core::SystemManager manager;
+    ecs::core::SystemManager<int> manager;
 
     SECTION("Add Siganture") {
         REQUIRE(manager.Register<TestSystem>() == ecs::core::err::ok);
@@ -359,7 +359,7 @@ TEST_CASE("Set Entity Signature" "[system manager]") {
         virtual void update(ecs::core::time_ms delta_time) override {}
     };
 
-    ecs::core::SystemManager manager;
+    ecs::core::SystemManager<int> manager;
 
     SECTION("Add Entity Signature not registered") {
         REQUIRE(manager.SetEntitySignature(0, ecs::core::Signature()) == ecs::core::err::not_registered);
@@ -391,7 +391,7 @@ TEST_CASE("Add systems", "[ecs]") {
 
         }
     };
-    ecs::core::EntityComponentSystem ecs;
+    ecs::core::EntityComponentSystem<int> ecs;
 
     REQUIRE(ecs.RegisterSystem<TestSystem>() == ecs::core::err::ok);
     REQUIRE(ecs.RegisterSystem<FooSystem>() == ecs::core::err::ok);
@@ -405,7 +405,7 @@ TEST_CASE("Add/get/remove components", "[ecs]") {
         int y_{0};
     };
 
-    ecs::core::EntityComponentSystem ecs;
+    ecs::core::EntityComponentSystem<int> ecs;
     const auto entity = ecs.CreateEntity().data;
     REQUIRE(ecs.RegisterComponent<Pos>() == ecs::core::err::ok);
     REQUIRE(ecs.AddComponent(entity, Pos()) == ecs::core::err::ok);

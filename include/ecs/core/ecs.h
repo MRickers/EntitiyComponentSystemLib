@@ -6,11 +6,12 @@
 #include <ecs/core/system_manager.h>
 
 namespace ecs::core {
+    template<typename Events>
+    class EntityComponentSystem {
+
     using EntityManagerPtr =  std::shared_ptr<EntityManager>;
     using ComponentManagerPtr = std::shared_ptr<ComponentManager>;
-    using SystemManagerPtr = std::shared_ptr<SystemManager>;
-
-    class EntityComponentSystem {
+    using SystemManagerPtr = std::shared_ptr<SystemManager<Events>>;
     private:
         EntityManagerPtr entity_manager_{};
         ComponentManagerPtr component_manager_{};
@@ -19,7 +20,7 @@ namespace ecs::core {
         EntityComponentSystem(
             EntityManagerPtr entity_manager = std::make_shared<EntityManager>(),
             ComponentManagerPtr component_manager = std::make_shared<ComponentManager>(),
-            SystemManagerPtr system_manager = std::make_shared<SystemManager>()
+            SystemManagerPtr system_manager = std::make_shared<SystemManager<Events>>()
         ) :
         entity_manager_(entity_manager),
         component_manager_(component_manager),

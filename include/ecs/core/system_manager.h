@@ -3,13 +3,18 @@
 #include <memory>
 
 #include <ecs/core/system.h>
+#include <event/event_bus.h>
+#include <event/event_queue.h>
 #include <logging/logging.h>
 
 namespace ecs::core {
+	template<typename Events>
 	class SystemManager {
 	private:
 		std::unordered_map<size_t, Signature> signatures_{};
 		std::unordered_map<size_t, std::shared_ptr<System>> systems_{};
+		ecs::event::EventBus<Events> event_bus_;
+		ecs::event::EventQueue<Events> event_queue;
 
 		static inline size_t type_counter_{ 0 };
 		template<typename T>
